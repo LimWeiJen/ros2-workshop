@@ -16,11 +16,16 @@ tmux new-session -d -s $SESSION_NAME 'source /opt/ros/jazzy/setup.bash && gz sim
 # 2. Split the window horizontally and spawn the robot
 # Use single quotes for the outer tmux send-keys argument to preserve the inner escaping
 tmux split-window -h -t $SESSION_NAME
-tmux send-keys -t $SESSION_NAME 'source /opt/ros/jazzy/setup.bash && sleep 10 && gz service -s /world/simple_gamefield/create --reqtype gz.msgs.EntityFactory --reptype gz.msgs.Boolean --req "sdf_filename: \"/home/devcontainers/workspace/robot/model.sdf\", name: \"robot\", pose: {position: {x: 4, y: 4, z: 2}}"' C-m
+tmux send-keys -t $SESSION_NAME 'source /opt/ros/jazzy/setup.bash && sleep 3 && gz service -s /world/simple_gamefield/create --reqtype gz.msgs.EntityFactory --reptype gz.msgs.Boolean --req "sdf_filename: \"/home/devcontainers/workspace/robot/model.sdf\", name: \"robot\", pose: {position: {x: 4, y: 4, z: 2}}"' C-m
 
-# 3. Split the right pane vertically and start the Python teleop script
+# 3. Split the left pane vertically and run the ROS-Gazebo Bridge (Bottom-Left)
+tmux select-pane -t 0
 tmux split-window -v -t $SESSION_NAME
-tmux send-keys -t $SESSION_NAME 'source /opt/ros/jazzy/setup.bash && sleep 12 && scripts/main.py' C-m
+tmux send-keys -t $SESSION_NAME 'source /opt/ros/jazzy/setup.bash && sleep 5 && ros2 run ros_gz_bridge parameter_bridge /cmd_vel@geometry_msgs/msg/Twist@gz.msgs.Twist' C-m
 
-# 4. Attach your terminal to the new tmux session
+# 4. Split the right pane vertically and start the Python teleop script
+tmux split-window -h -t $SESSION_NAME
+tmux send-keys -t $SESSION_NAME 'source /opt/ros/jazzy/setup.bash && sleep 7 && scripts/main.py' C-m
+
+# 5. Attach your terminal to the new tmux session
 tmux attach-session -t $SESSION_NAME
